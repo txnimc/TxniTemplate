@@ -32,7 +32,7 @@ features:
   - title: GitHub Actions Scripts
     icon: 📜
     details: Automatically publish your mod to CurseForge and Modrinth, as well as optional Vitepress documentation that you're reading right now!
-    link: https://github.com/tterrag1098/Registrate
+    link: https://github.com/txnimc/TxniTemplate/actions
     linkText: View on GitHub
 
   - title: Stonecutter Multiversion
