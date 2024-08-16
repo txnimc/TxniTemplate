@@ -10,9 +10,10 @@ classes/
 *.launch
 
 # idea
-
+node_modules/
 wiki/node_modules/
 wiki/.vitepress/cache/
+wiki/.vitepress/dist/
 
 
 

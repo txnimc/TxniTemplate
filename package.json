@@ -1,16 +1,12 @@
 {
-  "name": "wiki",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "docs:dev": "wiki/node_modules/.bin/vitepress dev",
-    "docs:build": "wiki/node_modules/.bin/vitepress build",
-    "docs:preview": "wiki/node_modules/.bin/vitepress preview"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "vitepress": "^1.3.2"
+    "vitepress": "^1.3.2",
+    "vitepress-plugin-tabs": "^0.5.0",
+    "vitepress-versioning-plugin": "^0.11.0"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev wiki",
+    "docs:build": "vitepress build wiki",
+    "docs:preview": "vitepress preview wiki"
   }
 }

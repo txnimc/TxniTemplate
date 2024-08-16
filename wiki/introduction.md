@@ -46,7 +46,7 @@ and it's easy to do so if you click the "Use this template" button in the top ri
 
 ![img.png](assets/usethistemplate.png)
 
-You can also depend on my personal library, [TxniLib](/lib/), which contains some multiloader/multiversion
+You can also depend on my personal library, [TxniLib](/lib), which contains some multiloader/multiversion
 abstractions that I find helpful. I do my best to document it, though it isn't a top priority.
 
 However, this is definitely a more advanced project setup, and I would not recommend it to someone just getting started

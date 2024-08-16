@@ -8,6 +8,8 @@ export default defineConfig({
   cleanUrls: true,
   appearance: 'dark',
 
+  base: "/TxniTemplate/",
+
   head: [[
     'link',
     { rel: 'icon', sizes: '32x32', href: '/assets/blahaj-min.png' },

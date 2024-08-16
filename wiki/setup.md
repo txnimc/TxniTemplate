@@ -42,7 +42,7 @@ gradle helper tasks under the `stonecutter` folder in the root project.
 ## Using Manifold To Implement Version-Specific Code
 
 You're going to need to download the [**Manifold IntelliJ plugin**](https://plugins.jetbrains.com/plugin/10057-manifold), as it is required for highlighting to
-work on the Manifold preprocessor directives ([more on IntelliJ config here](/intellij/)). 
+work on the Manifold preprocessor directives ([more on IntelliJ config here](/intellij)). 
 
 <sub>*If you're not using IntelliJ, you're using the wrong editor and are on your own :3*</sub>
 
