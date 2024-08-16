@@ -1,4 +1,4 @@
-name: Deploy VitePress site to Pages
+name: Deploy VitePress Wiki to GitHub Pages
 
 on:
   workflow_dispatch:
@@ -15,6 +15,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./wiki
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,19 +28,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '16'
-      - name: Set execute permissions for gradle
-        run: chmod +x ./gradlew
-      - name: Run dokkaHtmlCollector
-        run: ./gradlew dokkaHtmlCollector
-      - name: Create directories
-        run: mkdir -p docs/public/dokka
-      - name: Copy Dokka output
-        run: cp -r build/dokka/htmlCollector/* docs/public/dokka/
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Install dependencies
@@ -47,7 +37,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/.vitepress/dist
+          path: .vitepress/dist
   deploy:
     environment:
       name: github-pages
