@@ -8,8 +8,6 @@ export default defineConfig({
   cleanUrls: true,
   appearance: 'dark',
 
-  base: "/TxniTemplate/",
-
   head: [[
     'link',
     { rel: 'icon', sizes: '32x32', href: '/assets/blahaj-min.png' },
@@ -36,12 +34,21 @@ export default defineConfig({
           { text: 'Introduction', link: '/introduction' },
           { text: 'Getting Started', link: '/setup' },
           { text: 'IntelliJ Setup', link: '/intellij' },
+          { text: 'Dependencies', link: '/dependencies' },
+          { text: 'Flavors', link: '/flavors' },
         ]
       },
       {
         text: 'Library Usage',
         items: [
           { text: 'TxniLib', link: '/lib' }
+        ]
+      },
+      {
+        text: 'Other Resources',
+        items: [
+          { text: 'Multiversion Tips', link: '/tips' },
+          { text: 'Helpful Guides', link: '/guides' }
         ]
       }
     ],
