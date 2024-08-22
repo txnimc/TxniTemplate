@@ -11,9 +11,9 @@ There is a built in helper task for this: `renameExampleProject`, which will use
 your `gradle.properties` file. Make sure you set all of them, they are used elsewhere!
 
 ::: code-group
-```gradle.properties [gradle.properties]
-#----------Mod Properties----------#
-#Make sure you edit these before running renameExampleMod!
+```md [gradle.properties]
+# ----------Mod Properties----------#
+# Make sure you edit these before running renameExampleMod!
 mod.version=1.0.0
 mod.license=ARR
 # Root Folder Path (/java/group/namespace/)
@@ -27,7 +27,7 @@ mod.author=Toni
 mod.github=anthxnymc
 mod.display_name=Example Mod
 mod.description=Yet Another Example Mod
-#----------------------------------#
+# ----------------------------------#
 ```
 
 You'll also of course want to set the Curseforge and Modrinth deployment IDs, but that isn't necessary right away. 

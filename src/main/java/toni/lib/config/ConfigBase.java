@@ -1,6 +1,12 @@
 package toni.lib.config;
 
+#if NEO
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
+#else
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.*;
+#endif
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,13 +15,13 @@ import java.util.function.Supplier;
 
 public abstract class ConfigBase {
 
-    public ForgeConfigSpec specification;
+    public #if NEO ModConfigSpec #else ForgeConfigSpec #endif specification;
 
     protected int depth;
     protected List<CValue<?, ?>> allValues;
     protected List<ConfigBase> children;
 
-    public void registerAll(final ForgeConfigSpec.Builder builder) {
+    public void registerAll(final Builder builder) {
         if (allValues == null || allValues.isEmpty()) {
             System.out.println("[" + this.getClass().getName() + "] All values is empty! This config file contains nothing!");
             return;
@@ -38,7 +44,7 @@ public abstract class ConfigBase {
     public abstract String getName();
 
     @FunctionalInterface
-    protected static interface IValueProvider<V, T extends ForgeConfigSpec.ConfigValue<V>> extends Function<ForgeConfigSpec.Builder, T>
+    protected static interface IValueProvider<V, T extends ConfigValue<V>> extends Function<Builder, T>
     {
 
     }
@@ -78,7 +84,7 @@ public abstract class ConfigBase {
     protected <T extends ConfigBase> T nested(int depth, Supplier<T> constructor, String... comment) {
         T config = constructor.get();
         new ConfigGroup(config.getName(), depth, comment);
-        new CValue<Boolean, ForgeConfigSpec.BooleanValue>(config.getName(), builder -> {
+        new CValue<Boolean, BooleanValue>(config.getName(), builder -> {
             config.depth = depth;
             config.registerAll(builder);
             if (config.depth > depth)
@@ -91,8 +97,8 @@ public abstract class ConfigBase {
         return config;
     }
 
-    public class CValue<V, T extends ForgeConfigSpec.ConfigValue<V>> {
-        protected ForgeConfigSpec.ConfigValue<V> value;
+    public class CValue<V, T extends ConfigValue<V>> {
+        protected ConfigValue<V> value;
         protected String name;
         private IValueProvider<V, T> provider;
 
@@ -107,7 +113,7 @@ public abstract class ConfigBase {
             allValues.add(this);
         }
 
-        public void addComments(ForgeConfigSpec.Builder builder, String... comment) {
+        public void addComments(Builder builder, String... comment) {
             if (comment.length > 0) {
                 String[] comments = new String[comment.length + 1];
                 comments[0] = ".";
@@ -117,7 +123,7 @@ public abstract class ConfigBase {
                 builder.comment(".");
         }
 
-        public void register(ForgeConfigSpec.Builder builder) {
+        public void register(Builder builder) {
             value = provider.apply(builder);
         }
 
@@ -137,7 +143,7 @@ public abstract class ConfigBase {
     /**
      * Marker for config subgroups
      */
-    public class ConfigGroup extends CValue<Boolean, ForgeConfigSpec.BooleanValue> {
+    public class ConfigGroup extends CValue<Boolean, BooleanValue> {
 
         private int groupDepth;
         private String[] comment;
@@ -149,7 +155,7 @@ public abstract class ConfigBase {
         }
 
         @Override
-        public void register(ForgeConfigSpec.Builder builder) {
+        public void register(Builder builder) {
             if (depth > groupDepth)
                 builder.pop(depth - groupDepth);
             depth = groupDepth;
@@ -160,14 +166,14 @@ public abstract class ConfigBase {
 
     }
 
-    public class ConfigBool extends CValue<Boolean, ForgeConfigSpec.BooleanValue> {
+    public class ConfigBool extends CValue<Boolean, BooleanValue> {
 
         public ConfigBool(String name, boolean def, String... comment) {
             super(name, builder -> builder.define(name, def), comment);
         }
     }
 
-    public class ConfigEnum<T extends Enum<T>> extends CValue<T, ForgeConfigSpec.EnumValue<T>> {
+    public class ConfigEnum<T extends Enum<T>> extends CValue<T, EnumValue<T>> {
 
         public ConfigEnum(String name, T defaultValue, String[] comment) {
             super(name, builder -> builder.defineEnum(name, defaultValue), comment);
@@ -175,10 +181,10 @@ public abstract class ConfigBase {
 
     }
 
-    public class ConfigFloat extends CValue<Double, ForgeConfigSpec.DoubleValue> {
+    public class ConfigFloat extends CValue<Double, DoubleValue> {
 
         public ConfigFloat(String name, float current, float min, float max, String... comment) {
-            super(name, builder -> builder.defineInRange(name, current, min, max), comment);
+            super(name, builder ->  builder.defineInRange(name, (double) current, min, max), comment);
         }
 
         public float getF() {
@@ -186,7 +192,7 @@ public abstract class ConfigBase {
         }
     }
 
-    public class ConfigInt extends CValue<Integer, ForgeConfigSpec.IntValue> {
+    public class ConfigInt extends CValue<Integer, IntValue> {
 
         public ConfigInt(String name, int current, int min, int max, String... comment) {
             super(name, builder -> builder.defineInRange(name, current, min, max), comment);

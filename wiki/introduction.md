@@ -2,47 +2,56 @@
 outline: deep
 ---
 
-# Introduction 
+# Introduction to Multiversion Modding
 
 *Hello, and welcome to multiversion hell!*
 
 ## Why Multiversion?
 
-Instead of having separated Git branches, **multiversion** Minecraft mods build all jars from a single monorepo.
-While it makes Gradle scripts more complicated to set up, it massively simplifies updates across many supported versions.
+This template combines two different things---*multiversion* and *multiloader*.
 
-Instead of having separated Git repos for Forge and Fabric, **multiloader** Minecraft mods build from one repo,
-typically with a lot of shared code.
+Traditionally, if you want to support multiple Minecraft versions, you would need to create multiple Git branches for each version.
+This can be a major pain if you are actively maintaining each one, so instead, *multiversion* Minecraft mods 
+build all jars from a single branch, often called a *monorepo*.
 
-This template combines both, and is also set up with preprocessors to build from a single `src` directory.
-This means no separated `common`, `forge`, and `fabric` sourcesets like with traditional Architectury
-multiloader mods, which makes development much easier. I want to encourage more people to build mods this way,
-because it's better for everyone if projects are built with wide loader and version support from the start!
+Of course, you still need some way to separate version specific code. This is typically done with some kind of *preprocessor*,
+which enables conditional compilation so that each Minecraft version target only includes the code that works for it.
+While this makes Gradle scripts more complicated to set up and understand, it massively simplifies updates across many supported versions.
+Fortunately, setting up Gradle is largely a one time operation, and this template takes care of most of it.
+
+Likewise, if you wanted to support both Forge and Fabric, you would also need separated Git branches, and this can compound 
+the maintenance problem when trying to support multiple versions as well. To make this easier, **multiloader** Minecraft mods build from one repo,
+typically with a lot of shared code (since both modloaders are just Minecraft!). 
+
+You've probably heard of Architectury, which is a multiloader Gradle setup that uses separated `common`, `forge`, and `fabric`
+sourcesets. However, it's just simply cleaner to combine both, since they can both be set up with preprocessors to build from a single `src` directory.
+
+Note that you don't actually need to do both multiloader and multiversion---you can remove one or the other and this setup will work the same.
 
 ## What's in Here?
 
-This template uses [Essential Gradle Toolkit](https://github.com/EssentialGG/essential-gradle-toolkit),
-and is set up with the following:
+This template uses [Stonecutter](https://stonecutter.kikugie.dev/), and is set up with the following:
 
 - Documentation for every part of the build toolchain
 - Fabric, Forge, and NeoForge in one sourceset
 - Preconfigured support for all modern 'LTS' versions, in one sourceset (1.18.2, 1.19.2, 1.20.1, 1.21 by default, other versions can be added)
 - GitHub Actions workflows to automatically deploy published jars
-- Mixins for all platforms
-- Access Wideners / Transformers
+- Mojang Mappings with Parchment
+- Mixins for both platforms
+- Access Wideners (automatically converted to Forge Access Transformers)
 - Cross-platform Forge Config (FC API Port)
 - Cross-platform Registrate
-- Porting Lib for Forge
-- Forge and Fabric Datagen
-- Shadow
 
 In addition to all that, I've also set up some helper scripts to make forking this template easier (more on that below),
 and set up Manifold preprocessor directives (which are much easier to use than ReplayMod preprocessor).
 
-## Who can Use This?
+## Who Can Use This?
 
-This template is specifically built for the community! It is MIT licensed and allows anyone to fork and relicense,
-and it's easy to do so if you click the "Use this template" button in the top right corner:
+This template is specifically built for the community! I want to encourage more people
+to build mods this way, because it's better for everyone if projects are built with wide loader and version support from the start.
+
+It is MIT licensed and allows anyone to fork and relicense, and it's easy to do so 
+if you click the "Use this template" button in the top right corner:
 
 ![img.png](assets/usethistemplate.png)
 

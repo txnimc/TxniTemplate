@@ -12,7 +12,7 @@ import java.util.UUID;
 public class ModifierDefinition
 {
     private static String ID;
-    #if AFTER_21
+    #if AFTER_21_1
     private static ResourceLocation Resource;
     #else
     private static UUID Resource;
@@ -22,7 +22,7 @@ public class ModifierDefinition
     {
         ID = path;
 
-        #if AFTER_21
+        #if AFTER_21_1
         Resource = VersionUtils.resource(modid, path);
         #else
         Resource = Mth.createInsecureUUID(RandomSource.create(path.hashCode()));
@@ -36,9 +36,9 @@ public class ModifierDefinition
     public void addPermanentModifier(AttributeInstance attribute, double value) {
         attribute.addPermanentModifier(new AttributeModifier(
             Resource,
-            #if BEFORE_21 ID, #endif
+            #if BEFORE_21_1 ID, #endif
             value,
-            #if BEFORE_21 AttributeModifier.Operation.ADDITION #else AttributeModifier.Operation.ADD_VALUE #endif));
+            #if BEFORE_21_1 AttributeModifier.Operation.ADDITION #else AttributeModifier.Operation.ADD_VALUE #endif));
     }
 
 

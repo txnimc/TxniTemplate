@@ -1,4 +1,25 @@
-import org.jetbrains.kotlin.incremental.createDirectory
+// ----------------Dependency Configuration---------------- //
+// For configuring the CurseForge and Modrinth dependcies that will
+// show up on your mod page.
+fun addSharedDependencies(deps: DependencyContainer) {
+	if (isFabric) {
+		deps.requires("fabric-api")
+	}
+}
+
+fun addCurseForgeDependencies(deps: DependencyContainer) {
+
+}
+
+fun addModrinthDependencies(deps: DependencyContainer) {
+
+}
+// -------------------------------------------------------- //
+
+
+// ---------------TxniTemplate Build Script---------------- //
+//   (only edit below this if you know what you're doing)
+// -------------------------------------------------------- //
 
 plugins {
 	`maven-publish`
@@ -29,6 +50,7 @@ class ModData {
 }
 
 val mod = ModData()
+
 val mcVersion = stonecutter.current.project.substringBeforeLast('-')
 
 val loader = loom.platform.get().name.lowercase()
@@ -46,6 +68,7 @@ repositories {
 		forRepository { maven(url) }
 		filter { groups.forEach(::includeGroup) }
 	}
+	strictMaven("https://www.cursemaven.com", "curse.maven")
 	strictMaven("https://api.modrinth.com/maven", "maven.modrinth")
 	strictMaven("https://thedarkcolour.github.io/KotlinForForge/", "thedarkcolour")
 	maven("https://maven.kikugie.dev/releases")
@@ -53,6 +76,7 @@ repositories {
 	maven("https://maven.neoforged.net/releases/")
 	maven("https://maven.terraformersmc.com/releases/")
 	maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
+	maven("https://maven.parchmentmc.org")
 }
 
 dependencies {
@@ -66,6 +90,14 @@ dependencies {
 	@Suppress("UnstableApiUsage")
 	mappings(loom.layered {
 		officialMojangMappings()
+		val parchmentVersion = when (mcVersion) {
+			"1.18.2" -> "1.18.2:2022.11.06"
+			"1.19.2" -> "1.19.2:2022.11.27"
+			"1.20.1" -> "1.20.1:2023.09.03"
+			"1.21.1" -> "1.21:2024.07.28"
+			else -> ""
+		}
+		parchment("org.parchmentmc.data:parchment-$parchmentVersion@zip")
 	})
 
 	if (isFabric) {
@@ -84,7 +116,7 @@ dependencies {
 
 	if (isNeo) {
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
-		modApi("fuzs.forgeconfigapiport:forgeconfigapiport-neoforge:${property("deps.forgeconfigapi")}")
+		//modApi("fuzs.forgeconfigapiport:forgeconfigapiport-neoforge:${property("deps.forgeconfigapi")}")
 	}
 
 	vineflowerDecompilerClasspath("org.vineflower:vineflower:1.10.1")
@@ -96,11 +128,7 @@ loom {
 
 	if (loader == "forge") forge {
 		convertAccessWideners.set(true)
-		mixinConfigs(
-			"mixins.${mod.id}.json",
-			//"${mod.id}-common.mixins.json",
-			//"${mod.id}-compat.mixins.json"
-		)
+		mixinConfigs("mixins.${mod.id}.json")
 	} else if (loader == "neoforge") neoForge {
 
 	}
@@ -124,17 +152,21 @@ tasks.withType<JavaCompile>() {
 	options.compilerArgs.add("-Xplugin:Manifold")
 	// modify the JavaCompile task and inject our auto-generated Manifold symbols
 	if(!this.name.startsWith("_")) { // check the name, so we don't inject into Forge internal compilation
-		setupManifoldPreprocessors(options.compilerArgs, loader, projectDir, mcVersion, false)
+		ManifoldMC.setupPreprocessor(options.compilerArgs, loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, false)
 	}
 }
 
 project.tasks.register("setupManifoldPreprocessors") {
-	setupManifoldPreprocessors(ArrayList(), loader, projectDir, mcVersion, true)
+	ManifoldMC.setupPreprocessor(ArrayList(), loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, true)
 }
 
-tasks.setupChiseledBuild {
-	finalizedBy("setupManifoldPreprocessors")
+tasks.setupChiseledBuild { finalizedBy("setupManifoldPreprocessors") }
+
+tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, mod.displayName, mod.namespace, mod.author).configure {
+	group = "build helpers"
+	description = "Renames the example mod to match the mod ID, name, and display name in gradle.properties"
 }
+
 
 
 
@@ -159,15 +191,8 @@ if (stonecutter.current.isActive) {
 
 // Resources
 tasks.processResources {
-	inputs.property("version", mod.version)
-	inputs.property("mc", mod.mcDep)
-
-//	inputs.property("id", mod.id)
-//	inputs.property("name", mod.name)
-//	inputs.property("group", mod.group)
-//	inputs.property("author", mod.author)
-//	inputs.property("namespace", mod.namespace)
-//	inputs.property("display_name", mod.displayName)
+//	inputs.property("version", mod.version)
+//	inputs.property("mc", mod.mcDep)
 
 	val map = mapOf(
 		"version" to mod.version,
@@ -190,12 +215,6 @@ tasks.processResources {
 	filesMatching("META-INF/neoforge.mods.toml") { expand(map) }
 }
 
-//yamlang {
-//	targetSourceSets.set(mutableListOf(sourceSets["main"]))
-//	inputDir.set("assets/${mod.id}/lang")
-//}
-
-// Env configuration
 stonecutter {
 	val j21 = eval(mcVersion, ">=1.20.6")
 	java {
@@ -213,8 +232,7 @@ stonecutter {
 publishMods {
 	file = tasks.remapJar.get().archiveFile
 	additionalFiles.from(tasks.remapSourcesJar.get().archiveFile)
-	displayName =
-		"${mod.name} ${loader.replaceFirstChar { it.uppercase() }} ${mod.version} for ${property("mod.mc_title")}"
+	displayName = "${mod.name} ${loader.replaceFirstChar { it.uppercase() }} ${mod.version} for ${property("mod.mc_title")}"
 	version = mod.version
 	changelog = rootProject.file("CHANGELOG.md").readText()
 	type = STABLE
@@ -222,29 +240,25 @@ publishMods {
 
 	val targets = property("mod.mc_targets").toString().split(' ')
 
-	dryRun = providers.environmentVariable("MODRINTH_TOKEN")
-		.getOrNull() == null || providers.environmentVariable("CURSEFORGE_TOKEN").getOrNull() == null
+	dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null ||
+			providers.environmentVariable("CURSEFORGE_TOKEN").getOrNull() == null
 
 	modrinth {
 		projectId = property("publish.modrinth").toString()
 		accessToken = providers.environmentVariable("MODRINTH_TOKEN")
 		targets.forEach(minecraftVersions::add)
-		if (isFabric) {
-			requires("fabric-api", "fabric-language-kotlin")
-			optional("modmenu")
-		} else requires("kotlin-for-forge")
-		optional("yacl")
+		val deps = DependencyContainer(null, this)
+ 		addModrinthDependencies(deps)
+		addSharedDependencies(deps)
 	}
 
 	curseforge {
 		projectId = property("publish.curseforge").toString()
 		accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
 		targets.forEach(minecraftVersions::add)
-		if (isFabric) {
-			requires("fabric-api", "fabric-language-kotlin")
-			optional("modmenu")
-		} else requires("kotlin-for-forge")
-		optional("yacl")
+		val deps = DependencyContainer(this, null)
+		addCurseForgeDependencies(deps)
+		addSharedDependencies(deps)
 	}
 }
 
@@ -259,93 +273,3 @@ publishing {
 		}
 	}
 }
-
-fun setupManifoldPreprocessors(compilerArgs: MutableList<String>?, loader: String, parent: File, mcString: String, clearMainProject: Boolean) {
-	val mcVers = listOf("1.18.2", "1.19.2", "1.20.1", "1.21")
-	val mcIndex = mcVers.indexOf(mcString)
-	val argList = ArrayList<String>()
-
-	for (i in mcVers.indices) {
-		val mcStr = mcVers[i].replace(".", "_").substring(2)
-		if (mcIndex < i) argList.add("BEFORE_$mcStr")
-		if (mcIndex <= i) argList.add("UPTO_$mcStr")
-		if (mcIndex == i) argList.add("CURRENT_$mcStr")
-		if (mcIndex > i) argList.add("NEWER_THAN_$mcStr")
-		if (mcIndex >= i) argList.add("AFTER_$mcStr")
-	}
-
-	when (loader) {
-		"fabric" -> argList.add("FABRIC")
-		"forge" -> {
-			argList.add("FORGE")
-			argList.add("FORGELIKE")
-		}
-		"neoforge" -> {
-			argList.add("NEO")
-			argList.add("FORGELIKE")
-		}
-	}
-
-	val sb = StringBuilder().append("# DO NOT EDIT - GENERATED BY THE BUILD SCRIPT\n")
-	for (arg in argList) {
-		compilerArgs?.add("-A$arg")
-		sb.append(arg).append("=\n")
-	}
-
-	File(parent, "build.properties").writeText(sb.toString())
-	File(parent, "build/chiseledSrc").createDirectory()
-	File(parent, "build/chiseledSrc/build.properties").writeText(sb.toString())
-
-	if (stonecutter.active.project == stonecutter.current.project)
-		File(parent, "../../src/main/build.properties").writeText(sb.toString())
-
-	if (clearMainProject)
-		File(parent, "../../src/main/build.properties").delete()
-}
-
-///
-/// Remove this after renaming your mod!
-///
-tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, mod.displayName, mod.namespace, mod.author).configure {
-	group = "build helpers"
-	description = "Renames the example mod to match the mod ID, name, and display name in gradle.properties"
-}
-
-abstract class RenameExampleMod @Inject constructor(private val dir: File, private val modId: String, private val modName: String, private val modDisplayName: String, private val rootNS: String, private val authorID: String) : DefaultTask()
-{
-	@TaskAction
-	fun update() {
-		dir.walk()
-			.filter { it.name.endsWith(".java") || it.name.endsWith(".json") }
-			.forEach {
-				val text = it.readText()
-					.replace("example_mod", modId)
-					.replace("ExampleMod", modName)
-					.replace("Example Mod", modDisplayName)
-
-				it.writeText(text)
-			}
-
-		val javaDir = File(dir, "src/main/java/")
-		val resourcesDir = File(dir, "src/main/resources/")
-		val modDir = File(javaDir, "toni/examplemod/")
-
-		rename(resourcesDir, "mixins.example_mod.json", "mixins.$modId.json")
-		rename(resourcesDir, "example_mod.accesswidener", "$modId.accesswidener")
-
-		rename(resourcesDir, "assets/example_mod", "assets/$modId")
-		rename(resourcesDir, "data/example_mod", "data/$modId")
-
-		rename(modDir, "ExampleMod.java", "$modName.java")
-
-		rename(javaDir, "toni/examplemod/", "toni/$rootNS/")
-		rename(javaDir, "toni/", "$authorID/")
-	}
-
-	private fun rename(targetDir: File, from: String, to: String) {
-		File(targetDir, from).renameTo(File(targetDir, to))
-	}
-}
-///
-/// ^ Remove this after renaming your mod! ^
-///

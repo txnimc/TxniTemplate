@@ -12,22 +12,22 @@ import java.util.function.Consumer;
     import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
     import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
     import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+    import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 #endif
 
-#if AFTER_21
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+#if AFTER_21_1
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.codec.StreamCodec;
 #else
 import toni.lib.networking.codecs.StreamCodec;
 #endif
 
-public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21 implements CustomPacketPayload #endif
+public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21_1 implements CustomPacketPayload #endif
 {
     public ResourceLocation Resource;
     public StreamCodec<FriendlyByteBuf, TPacket> CODEC;
 
-    #if AFTER_21
+    #if AFTER_21_1
     public CustomPacketPayload.Type<TPacket> ID;
 
     @Override public Type<? extends CustomPacketPayload> type() { return ID; }
@@ -38,7 +38,7 @@ public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21 imple
         Resource = VersionUtils.resource(modid, path);
         CODEC = codec; //StreamCodec.composite(ByteBufCodecs.BOOL, SyncMediumcoreGameRuleMessage::mediumcoreMode, SyncMediumcoreGameRuleMessage::new);
 
-        #if AFTER_21
+        #if AFTER_21_1
         ID = new CustomPacketPayload.Type<>(Resource);
         #endif
     }
@@ -46,7 +46,7 @@ public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21 imple
     public void registerType()
     {
         #if FABRIC
-            #if AFTER_21
+            #if AFTER_21_1
             // In your common initializer method
             PayloadTypeRegistry.playS2C().register(ID, CODEC);
             #endif
@@ -56,7 +56,7 @@ public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21 imple
     public void registerClientHandler(Consumer<TPacket> consumer)
     {
         #if FABRIC
-            #if AFTER_21
+            #if AFTER_21_1
             ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> consumer.accept(payload));
             #else
             ClientPlayNetworking.registerGlobalReceiver(Resource, (client, handler, buf, responseSender) ->
@@ -71,14 +71,14 @@ public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21 imple
     public void sendToAll(MinecraftServer server)
     {
         #if FABRIC
-            #if BEFORE_21
+            #if BEFORE_21_1
             FriendlyByteBuf buf = PacketByteBufs.create();
             CODEC.encode(buf, (TPacket) this);
             #endif
 
             for (ServerPlayer player : server.getPlayerList().getPlayers())
             {
-                #if AFTER_21
+                #if AFTER_21_1
                 ServerPlayNetworking.send(player, this);
                 #else
                 ServerPlayNetworking.send(player, Resource, buf);
@@ -90,7 +90,7 @@ public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21 imple
     public void send(ServerPlayer player)
     {
         #if FABRIC
-            #if AFTER_21
+            #if AFTER_21_1
             ServerPlayNetworking.send(player, this);
             #else
             FriendlyByteBuf buf = PacketByteBufs.create();

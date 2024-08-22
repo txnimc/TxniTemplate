@@ -8,7 +8,7 @@ hero:
   image:
     src: /assets/blahaj-min.png
     alt: TxniTemplate
-  tagline: Hello, and welcome to multiversion hell!
+  tagline: Hello, and welcome to multiversion hell
 
 features:
   - title: Modern Template Mod
