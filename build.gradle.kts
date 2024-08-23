@@ -1,20 +1,43 @@
-// ----------------Dependency Configuration---------------- //
-// For configuring the CurseForge and Modrinth dependcies that will
-// show up on your mod page.
-fun addSharedDependencies(deps: DependencyContainer) {
-	if (isFabric) {
-		deps.requires("fabric-api")
+val settings = object : TxniTemplateSettings {
+
+	// -------------------- Dependencies ---------------------- //
+	override val depsHandler: DependencyHandler get() = object : DependencyHandler {
+		override fun addGlobal(deps: DependencyHandlerScope) {
+
+		}
+
+		override fun addFabric(deps: DependencyHandlerScope) {
+
+		}
+
+		override fun addForge(deps: DependencyHandlerScope) {
+
+		}
+
+		override fun addNeo(deps: DependencyHandlerScope) {
+
+		}
+	}
+
+
+	// ---------- Curseforge/Modrinth Configuration ----------- //
+	// For configuring the dependecies that will show up on your mod page.
+	override val publishHandler: PublishDependencyHandler get() = object : PublishDependencyHandler {
+		override fun addShared(deps: DependencyContainer) {
+			if (isFabric) {
+				deps.requires("fabric-api")
+			}
+		}
+
+		override fun addCurseForge(deps: DependencyContainer) {
+
+		}
+
+		override fun addModrinth(deps: DependencyContainer) {
+
+		}
 	}
 }
-
-fun addCurseForgeDependencies(deps: DependencyContainer) {
-
-}
-
-fun addModrinthDependencies(deps: DependencyContainer) {
-
-}
-// -------------------------------------------------------- //
 
 
 // ---------------TxniTemplate Build Script---------------- //
@@ -80,11 +103,9 @@ repositories {
 }
 
 dependencies {
-	fun modrinth(name: String, dep: Any?) = "maven.modrinth:$name:$dep"
-
 	minecraft("com.mojang:minecraft:${mcVersion}")
 
-	// apply the Manifold processor, do not remove this unless you want to swap back to Essential preprocessor
+	// apply the Manifold processor, do not remove this unless you want to swap back to Stonecutter preprocessor
 	implementation(annotationProcessor("systems.manifold:manifold-preprocessor:${manifold.manifoldVersion.get()}")!!)
 
 	@Suppress("UnstableApiUsage")
@@ -100,23 +121,27 @@ dependencies {
 		parchment("org.parchmentmc.data:parchment-$parchmentVersion@zip")
 	})
 
+	settings.depsHandler.addGlobal(this)
+
 	if (isFabric) {
+		settings.depsHandler.addFabric(this)
 		modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}")
 		modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
 
-		if (mcVersion == "1.19.2")
-			modApi("net.minecraftforge:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
-		else
-			modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
+		when (mcVersion) {
+			"1.19.2" -> modApi("net.minecraftforge:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
+			else -> modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
+		}
 	}
 
 	if (isForge) {
+		settings.depsHandler.addForge(this)
 		"forge"("net.minecraftforge:forge:${mcVersion}-${property("deps.fml")}")
 	}
 
 	if (isNeo) {
+		settings.depsHandler.addNeo(this)
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
-		//modApi("fuzs.forgeconfigapiport:forgeconfigapiport-neoforge:${property("deps.forgeconfigapi")}")
 	}
 
 	vineflowerDecompilerClasspath("org.vineflower:vineflower:1.10.1")
@@ -248,8 +273,8 @@ publishMods {
 		accessToken = providers.environmentVariable("MODRINTH_TOKEN")
 		targets.forEach(minecraftVersions::add)
 		val deps = DependencyContainer(null, this)
- 		addModrinthDependencies(deps)
-		addSharedDependencies(deps)
+ 		settings.publishHandler.addModrinth(deps)
+		settings.publishHandler.addShared(deps)
 	}
 
 	curseforge {
@@ -257,8 +282,8 @@ publishMods {
 		accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
 		targets.forEach(minecraftVersions::add)
 		val deps = DependencyContainer(this, null)
-		addCurseForgeDependencies(deps)
-		addSharedDependencies(deps)
+		settings.publishHandler.addCurseForge(deps)
+		settings.publishHandler.addShared(deps)
 	}
 }
 
