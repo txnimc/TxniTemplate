@@ -1,6 +1,6 @@
 package toni.lib.config;
 
-#if NEO
+#if after_21_1
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
 #else
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public abstract class ConfigBase {
 
-    public #if NEO ModConfigSpec #else ForgeConfigSpec #endif specification;
+    public #if after_21_1 ModConfigSpec #else ForgeConfigSpec #endif specification;
 
     protected int depth;
     protected List<CValue<?, ?>> allValues;

@@ -9,8 +9,14 @@ import java.util.function.Supplier;
 import toni.lib.config.ConfigBase;
 
 #if FABRIC
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
+    #if after_21_1
+    import net.neoforged.fml.config.ModConfig;
+    import net.neoforged.neoforge.common.ModConfigSpec;
+    import net.neoforged.neoforge.common.ModConfigSpec.*;
+    #else
+    import net.minecraftforge.fml.config.ModConfig;
+    import net.minecraftforge.common.ForgeConfigSpec;
+    #endif
 #endif
 
 #if FORGE
@@ -71,7 +77,7 @@ public class AllConfigs {
         return config;
     }
 
-    public static void register(BiConsumer<ModConfig.Type, #if NEO ModConfigSpec #else ForgeConfigSpec #endif> registration) {
+    public static void register(BiConsumer<ModConfig.Type, #if after_21_1 ModConfigSpec #else ForgeConfigSpec #endif> registration) {
         client = register(CClient::new, ModConfig.Type.CLIENT);
         common = register(CCommon::new, ModConfig.Type.COMMON);
         server = register(CServer::new, ModConfig.Type.SERVER);

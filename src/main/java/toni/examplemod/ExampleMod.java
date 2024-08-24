@@ -1,6 +1,5 @@
 package toni.examplemod;
-
-import net.minecraft.client.gui.Gui;
+ 
 import toni.examplemod.foundation.config.AllConfigs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,22 +8,14 @@ import org.apache.logging.log4j.Logger;
 #if FABRIC
     import net.fabricmc.api.ClientModInitializer;
     import net.fabricmc.api.ModInitializer;
-    import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-    import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-    import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-    import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-    #if AFTER_20_1
-    import net.neoforged.fml.config.ModConfig;
-    import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-    import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-    import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry;
-    #else
-    import net.minecraftforge.fml.config.ModConfig;
+    #if after_21_1
+    import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+    #endif
+
+    #if current_20_1
     import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
-    import fuzs.forgeconfigapiport.fabric.api.forge.v4.ForgeConfigRegistry
     #endif
 #endif
-
 
 #if FORGE
 import net.minecraftforge.fml.common.Mod;
@@ -73,9 +64,9 @@ public class ExampleMod #if FABRIC implements ModInitializer, ClientModInitializ
             modContainer.registerConfig(type, spec);
             #elif FABRIC
                 #if AFTER_21_1
-                ForgeConfigRegistry.INSTANCE.register(ExampleMod.MODID, type, spec);
+                NeoForgeConfigRegistry.INSTANCE.register(ExampleMod.MODID, type, spec);
                 #else
-                ConfigRegistry.registerConfig(ExampleMod.MODID, type, spec);
+                ForgeConfigRegistry.INSTANCE.register(ExampleMod.MODID, type, spec);
                 #endif
             #endif
         });

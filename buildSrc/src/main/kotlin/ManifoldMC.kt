@@ -16,23 +16,45 @@ class ManifoldMC {
 
             for (i in mcVers.indices) {
                 val mcStr = mcVers[i].replace(".", "_").substring(2)
-                if (mcIndex < i) argList.add("BEFORE_$mcStr")
-                if (mcIndex <= i) argList.add("UPTO_$mcStr")
-                if (mcIndex == i) argList.add("CURRENT_$mcStr")
-                if (mcIndex > i) argList.add("NEWER_THAN_$mcStr")
-                if (mcIndex >= i) argList.add("AFTER_$mcStr")
+                if (mcIndex < i) {
+                    argList.add("BEFORE_$mcStr")
+                    argList.add("before_$mcStr")
+                }
+                if (mcIndex <= i) {
+                    argList.add("UPTO_$mcStr")
+                    argList.add("upto_$mcStr")
+                }
+                if (mcIndex == i) {
+                    argList.add("CURRENT_$mcStr")
+                    argList.add("current_$mcStr")
+                }
+                if (mcIndex > i) {
+                    argList.add("NEWER_THAN_$mcStr")
+                    argList.add("newerthan_$mcStr")
+                }
+                if (mcIndex >= i) {
+                    argList.add("AFTER_$mcStr")
+                    argList.add("after_$mcStr")
+                }
             }
 
             when (loader) {
-                "fabric" -> argList.add("FABRIC")
+                "fabric" -> {
+                    argList.add("FABRIC")
+                    argList.add("fabric")
+                }
                 "forge" -> {
                     argList.add("FORGE")
                     argList.add("FORGELIKE")
+                    argList.add("forge")
+                    argList.add("forgelike")
                 }
 
                 "neoforge" -> {
                     argList.add("NEO")
                     argList.add("FORGELIKE")
+                    argList.add("neo")
+                    argList.add("forgelike")
                 }
             }
 
@@ -43,9 +65,6 @@ class ManifoldMC {
             }
 
             File(parent, "build.properties").writeText(sb.toString())
-
-            File(parent, "build/chiseledSrc").mkdir()
-            File(parent, "build/chiseledSrc/build.properties").writeText(sb.toString())
 
             if (isActive)
                 File(parent, "../../src/main/build.properties").writeText(sb.toString())

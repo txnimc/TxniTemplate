@@ -100,6 +100,7 @@ repositories {
 	maven("https://maven.terraformersmc.com/releases/")
 	maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
 	maven("https://maven.parchmentmc.org")
+	maven("https://maven.su5ed.dev/releases")
 }
 
 dependencies {
@@ -124,14 +125,17 @@ dependencies {
 	settings.depsHandler.addGlobal(this)
 
 	if (isFabric) {
+		modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
+
 		settings.depsHandler.addFabric(this)
 		modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}")
 		modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
 
-		when (mcVersion) {
+		// JarJar Forge Config API
+		include(when (mcVersion) {
 			"1.19.2" -> modApi("net.minecraftforge:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
 			else -> modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
-		}
+		}!!)
 	}
 
 	if (isForge) {
@@ -140,6 +144,8 @@ dependencies {
 	}
 
 	if (isNeo) {
+		modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-neoforge")
+
 		settings.depsHandler.addNeo(this)
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
 	}
@@ -149,7 +155,12 @@ dependencies {
 
 // Loom config
 loom {
-	accessWidenerPath.set(rootProject.file("src/main/resources/${mod.id}.accesswidener"))
+	try {
+		accessWidenerPath.set(rootProject.file("src/main/resources/${mod.id}.accesswidener"))
+	}
+	catch (_: Exception) {
+		println("Could not set accesswidener!")
+	}
 
 	if (loader == "forge") forge {
 		convertAccessWideners.set(true)
@@ -173,6 +184,14 @@ loom {
 }
 
 // Tasks
+tasks {
+	remapJar {
+		if (isNeo) {
+			atAccessWideners.add("${mod.id}.accesswidener")
+		}
+	}
+}
+
 tasks.withType<JavaCompile>() {
 	options.compilerArgs.add("-Xplugin:Manifold")
 	// modify the JavaCompile task and inject our auto-generated Manifold symbols
@@ -187,13 +206,10 @@ project.tasks.register("setupManifoldPreprocessors") {
 
 tasks.setupChiseledBuild { finalizedBy("setupManifoldPreprocessors") }
 
-tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, mod.displayName, mod.namespace, mod.author).configure {
+tasks.register<RenameExampleMod>("renameExampleMod", rootDir, mod.id, mod.name, mod.displayName, mod.namespace, mod.group).configure {
 	group = "build helpers"
 	description = "Renames the example mod to match the mod ID, name, and display name in gradle.properties"
 }
-
-
-
 
 val buildAndCollect = tasks.register<Copy>("buildAndCollect") {
 	group = "build"
@@ -214,11 +230,7 @@ if (stonecutter.current.isActive) {
 	}
 }
 
-// Resources
 tasks.processResources {
-//	inputs.property("version", mod.version)
-//	inputs.property("mc", mod.mcDep)
-
 	val map = mapOf(
 		"version" to mod.version,
 		"mc" to mod.mcDep,
