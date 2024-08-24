@@ -1,5 +1,5 @@
 package toni.examplemod;
- 
+
 import toni.examplemod.foundation.config.AllConfigs;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
