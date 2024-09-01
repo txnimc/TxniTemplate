@@ -322,8 +322,8 @@ publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
 			groupId = "${property("mod.group")}.${mod.id}"
-			artifactId = mod.version
-			version = mcVersion
+			version = mod.version
+			artifactId = "$loader-$mcVersion" //base.archivesName.get()
 
 			from(components["java"])
 		}
@@ -333,26 +333,19 @@ publishing {
 		val username = "MAVEN_USERNAME".let { System.getenv(it) ?: findProperty(it) }?.toString()
 		val password = "MAVEN_PASSWORD".let { System.getenv(it) ?: findProperty(it) }?.toString()
 
-		if (username != null && password != null) {
-			maven {
-				name = "${mod.author}Releases"
-				url = uri("https://${property("publish.maven_url").toString()}/releases")
-				credentials {
-					this.username = System.getenv("MAVEN_USERNAME")
-					this.password = System.getenv("MAVEN_PASSWORD")
-				}
-			}
-			maven {
-				name = "${mod.author}Snapshots"
-				url = uri("https://maven.flashyreese.me/snapshots")
-				credentials {
-					this.username = System.getenv("MAVEN_USERNAME")
-					this.password = System.getenv("MAVEN_PASSWORD")
-				}
-			}
-		} else {
+		if (username == null || password == null) {
 			println("No maven credentials found.")
+            return@repositories;
 		}
 
+		val mavenURI = if (properties["publish.use_snapshot_maven"] == "true") "snapshots" else "releases"
+		maven {
+			name = "${mod.author}_$mavenURI"
+			url = uri("https://${property("publish.maven_url").toString()}/$mavenURI")
+			credentials {
+				this.username = System.getenv("MAVEN_USERNAME")
+				this.password = System.getenv("MAVEN_PASSWORD")
+			}
+		}
 	}
 }
