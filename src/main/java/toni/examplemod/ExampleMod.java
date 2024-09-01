@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
     import net.fabricmc.api.ModInitializer;
     #if after_21_1
     import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+    import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry;
+    import net.neoforged.neoforge.client.gui.ConfigurationScreen;
     #endif
 
     #if current_20_1
@@ -34,6 +36,8 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 #endif
 
 
@@ -43,7 +47,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 public class ExampleMod #if FABRIC implements ModInitializer, ClientModInitializer #endif
 {
     public static final String MODNAME = "Example Mod";
-    public static final String MODID = "example_mod";
+    public static final String ID = "example_mod";
     public static final Logger LOGGER = LogManager.getLogger(MODNAME);
 
     public ExampleMod(#if NEO IEventBus modEventBus, ModContainer modContainer #endif) {
@@ -55,32 +59,39 @@ public class ExampleMod #if FABRIC implements ModInitializer, ClientModInitializ
         #if FORGELIKE
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::clientSetup);
-        #endif
 
         AllConfigs.register((type, spec) -> {
             #if FORGE
             ModLoadingContext.get().registerConfig(type, spec);
             #elif NEO
             modContainer.registerConfig(type, spec);
-            #elif FABRIC
-                #if AFTER_21_1
-                NeoForgeConfigRegistry.INSTANCE.register(ExampleMod.MODID, type, spec);
-                #else
-                ForgeConfigRegistry.INSTANCE.register(ExampleMod.MODID, type, spec);
-                #endif
+            modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
             #endif
         });
+        #endif
     }
 
 
     #if FABRIC @Override #endif
     public void onInitialize() {
-
+        #if FABRIC
+            AllConfigs.register((type, spec) -> {
+                #if AFTER_21_1
+                NeoForgeConfigRegistry.INSTANCE.register(ExampleMod.ID, type, spec);
+                #else
+                ForgeConfigRegistry.INSTANCE.register(ExampleMod.ID, type, spec);
+                #endif
+            });
+        #endif
     }
 
     #if FABRIC @Override #endif
     public void onInitializeClient() {
-
+        #if AFTER_21_1
+            #if FABRIC
+            ConfigScreenFactoryRegistry.INSTANCE.register(ExampleMod.ID, ConfigurationScreen::new);
+            #endif
+        #endif
     }
 
     // Forg event stubs to call the Fabric initialize methods, and set up cloth config screen

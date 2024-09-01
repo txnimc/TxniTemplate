@@ -1,14 +1,17 @@
 package toni.examplemod.foundation.config;
 
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import toni.examplemod.ExampleMod;
 import toni.lib.config.ConfigBase;
 
 #if FABRIC
+    import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
     #if after_21_1
     import net.neoforged.fml.config.ModConfig;
     import net.neoforged.neoforge.common.ModConfigSpec;
@@ -16,6 +19,7 @@ import toni.lib.config.ConfigBase;
     #else
     import net.minecraftforge.fml.config.ModConfig;
     import net.minecraftforge.common.ForgeConfigSpec;
+    import net.minecraftforge.common.ForgeConfigSpec.*;
     #endif
 #endif
 
@@ -85,6 +89,20 @@ public class AllConfigs {
         for (Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
             registration.accept(pair.getKey(), pair.getValue().specification);
     }
+
+    #if FABRIC
+    public static void generateTranslations(FabricLanguageProvider.TranslationBuilder translationBuilder) {
+        var existing = new HashSet<String>();
+
+        for (Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
+        {
+            for (var entry : pair.getValue().specification.getSpec().entrySet()) {
+                if (existing.add(entry.getKey()))
+                    translationBuilder.add(ExampleMod.ID + ".configuration." + entry.getKey(), entry.getKey());
+            }
+        }
+    }
+    #endif
 
     #if FORGELIKE
     @SubscribeEvent

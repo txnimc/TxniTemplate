@@ -70,12 +70,14 @@ class ModData {
 	val mcDep = property("mod.mc_dep").toString()
 	val license = property("mod.license").toString()
 	val github = property("mod.github").toString()
+	val clientuser = property("client.user").toString()
+	val clientuuid = property("client.uuid").toString()
 }
 
 val mod = ModData()
 
 val mcVersion = stonecutter.current.project.substringBeforeLast('-')
-
+val isActive = stonecutter.active.project == stonecutter.current.project
 val loader = loom.platform.get().name.lowercase()
 val isFabric = loader == "fabric"
 val isForge = loader == "forge"
@@ -125,7 +127,7 @@ dependencies {
 	settings.depsHandler.addGlobal(this)
 
 	if (isFabric) {
-		modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
+		modImplementation(settings.depsHandler.modrinth("modmenu", property("deps.modmenu")))
 
 		settings.depsHandler.addFabric(this)
 		modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fapi")}")
@@ -144,8 +146,6 @@ dependencies {
 	}
 
 	if (isNeo) {
-		modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-neoforge")
-
 		settings.depsHandler.addNeo(this)
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
 	}
@@ -155,30 +155,49 @@ dependencies {
 
 // Loom config
 loom {
-	try {
-		accessWidenerPath.set(rootProject.file("src/main/resources/${mod.id}.accesswidener"))
-	}
-	catch (_: Exception) {
-		println("Could not set accesswidener!")
-	}
+	val awFile = rootProject.file("src/main/resources/${mod.id}.accesswidener")
+	if (awFile.exists())
+		accessWidenerPath.set(awFile)
 
 	if (loader == "forge") forge {
 		convertAccessWideners.set(true)
 		mixinConfigs("mixins.${mod.id}.json")
-	} else if (loader == "neoforge") neoForge {
-
 	}
 
-	runConfigs["client"].apply {
-		ideConfigGenerated(true)
-		vmArgs("-Dmixin.debug.export=true")
-		programArgs("--username=nthxny") // Mom look I'm in the codebase!
-		runDir = "../../run/${stonecutter.current.project}/"
+	if (isActive) {
+		runConfigs.all {
+			ideConfigGenerated(true)
+			vmArgs("-Dmixin.debug.export=true")
+			// Mom look I'm in the codebase!
+			programArgs("--username=${mod.clientuser}", "--uuid=${mod.clientuuid}")
+			runDir = "../../run/${stonecutter.current.project}/"
+		}
 	}
 
 	decompilers {
 		get("vineflower").apply {
 			options.put("mark-corresponding-synthetics", "1")
+		}
+	}
+
+	runs {
+		register("datagen") {
+			client()
+			name("DataGen Client")
+			vmArg("-Dfabric-api.datagen")
+			vmArg("-Dfabric-api.datagen.output-dir=" + getRootDir().toPath().resolve("src/main/generated"))
+			vmArg("-Dfabric-api.datagen.modid=${mod.id}")
+			ideConfigGenerated(false)
+			runDir("build/datagen")
+		}
+	}
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDir("src/main/generated")
+			exclude(".cache/")
 		}
 	}
 }
@@ -308,5 +327,32 @@ publishing {
 
 			from(components["java"])
 		}
+	}
+
+	repositories {
+		val username = "MAVEN_USERNAME".let { System.getenv(it) ?: findProperty(it) }?.toString()
+		val password = "MAVEN_PASSWORD".let { System.getenv(it) ?: findProperty(it) }?.toString()
+
+		if (username != null && password != null) {
+			maven {
+				name = "${mod.author}Releases"
+				url = uri("https://${property("publish.maven_url").toString()}/releases")
+				credentials {
+					this.username = System.getenv("MAVEN_USERNAME")
+					this.password = System.getenv("MAVEN_PASSWORD")
+				}
+			}
+			maven {
+				name = "${mod.author}Snapshots"
+				url = uri("https://maven.flashyreese.me/snapshots")
+				credentials {
+					this.username = System.getenv("MAVEN_USERNAME")
+					this.password = System.getenv("MAVEN_PASSWORD")
+				}
+			}
+		} else {
+			println("No maven credentials found.")
+		}
+
 	}
 }

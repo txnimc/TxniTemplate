@@ -8,7 +8,7 @@ plugins {
     id("systems.manifold.manifold-gradle-plugin") version "0.0.2-alpha" apply false
 }
 
-stonecutter active "1.20.1-fabric" /* [SC] DO NOT EDIT */
+stonecutter active "1.21.1-neoforge" /* [SC] DO NOT EDIT */
 
 stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
     group = "project"
@@ -23,6 +23,11 @@ stonecutter registerChiseled tasks.register("chiseledBuildAndCollect", stonecutt
 stonecutter registerChiseled tasks.register("chiseledPublishMods", stonecutter.chiseled) {
     group = "project"
     ofTask("publishMods")
+}
+
+stonecutter registerChiseled tasks.register("chiseledPublishMaven", stonecutter.chiseled) {
+    group = "project"
+    ofTask("publish")
 }
 
 stonecutter.automaticPlatformConstants = true

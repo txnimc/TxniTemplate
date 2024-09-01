@@ -12,14 +12,16 @@ import java.util.function.Consumer;
     import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
     import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
     import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-    import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 #endif
 
 #if AFTER_21_1
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.codec.StreamCodec;
+    import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+    import net.minecraft.network.codec.StreamCodec;
+    #if FABRIC
+    import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+    #endif
 #else
-import toni.lib.networking.codecs.StreamCodec;
+    import toni.lib.networking.codecs.StreamCodec;
 #endif
 
 public abstract class ToniPacket <TPacket extends ToniPacket> #if AFTER_21_1 implements CustomPacketPayload #endif

@@ -21,6 +21,7 @@ abstract class RenameExampleMod @Inject constructor(private val dir: File, priva
 
         val javaDir = File(dir, "src/main/java/")
         val resourcesDir = File(dir, "src/main/resources/")
+        val generatedDir = File(dir, "src/generated/resources/")
         val modDir = File(javaDir, "toni/examplemod/")
 
         rename(resourcesDir, "mixins.example_mod.json", "mixins.$modId.json")
@@ -28,11 +29,19 @@ abstract class RenameExampleMod @Inject constructor(private val dir: File, priva
 
         rename(resourcesDir, "assets/example_mod", "assets/$modId")
         rename(resourcesDir, "data/example_mod", "data/$modId")
+        rename(generatedDir, "assets/example_mod", "assets/$modId")
+        rename(generatedDir, "data/example_mod", "data/$modId")
 
         rename(modDir, "ExampleMod.java", "$modName.java")
+        rename(modDir, "foundation/data/ExampleModDatagen.java", "foundation/data/${modName}Datagen.java")
 
         rename(javaDir, "toni/examplemod/", "toni/$rootNS/")
         rename(javaDir, "toni/", "$authorID/")
+
+        File(dir, "wiki/").deleteRecursively()
+        File(dir, "package.json").delete()
+        File(dir, "package-lock.json").delete()
+        File(dir, ".github/workflows/deploy-wiki.yml").delete()
     }
 
     private fun rename(targetDir: File, from: String, to: String) {
