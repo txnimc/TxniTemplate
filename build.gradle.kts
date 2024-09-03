@@ -55,7 +55,7 @@ plugins {
 }
 
 // The manifold Gradle plugin version. Update this if you update your IntelliJ Plugin!
-manifold { manifoldVersion = "2024.1.30" }
+manifold { manifoldVersion = "2024.1.31" }
 
 // Variables
 class ModData {
@@ -89,13 +89,9 @@ base { archivesName.set("${mod.id}-$loader") }
 
 // Dependencies
 repositories {
-	fun strictMaven(url: String, vararg groups: String) = exclusiveContent {
-		forRepository { maven(url) }
-		filter { groups.forEach(::includeGroup) }
-	}
-	strictMaven("https://www.cursemaven.com", "curse.maven")
-	strictMaven("https://api.modrinth.com/maven", "maven.modrinth")
-	strictMaven("https://thedarkcolour.github.io/KotlinForForge/", "thedarkcolour")
+	exclusiveMaven("https://www.cursemaven.com", "curse.maven")
+	exclusiveMaven("https://api.modrinth.com/maven", "maven.modrinth")
+	exclusiveMaven("https://thedarkcolour.github.io/KotlinForForge/", "thedarkcolour")
 	maven("https://maven.kikugie.dev/releases")
 	maven("https://jitpack.io")
 	maven("https://maven.neoforged.net/releases/")
@@ -134,10 +130,18 @@ dependencies {
 		modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
 
 		// JarJar Forge Config API
-		include(when (mcVersion) {
-			"1.19.2" -> modApi("net.minecraftforge:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
-			else -> modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
-		}!!)
+		if (setting("options.forgeconfig"))
+			include(when (mcVersion) {
+				"1.19.2" -> modApi("net.minecraftforge:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
+				else -> modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
+			}!!)
+
+		if (setting("runtime.sodium"))
+			modRuntimeOnly(settings.depsHandler.modrinth("sodium", when (mcVersion) {
+				"1.21.1" -> "mc1.21-0.6.0-beta.1-fabric"
+				"1.20.1" -> "mc1.20.1-0.5.11"
+				else -> null
+			}))
 	}
 
 	if (isForge) {
@@ -148,10 +152,15 @@ dependencies {
 	if (isNeo) {
 		settings.depsHandler.addNeo(this)
 		"neoForge"("net.neoforged:neoforge:${property("deps.fml")}")
+
+		if (setting("runtime.sodium"))
+			runtimeOnly(settings.depsHandler.modrinth("sodium", "mc1.21-0.6.0-beta.1-neoforge"))
 	}
 
 	vineflowerDecompilerClasspath("org.vineflower:vineflower:1.10.1")
 }
+
+fun setting(prop : String) : Boolean = property(prop) == "true"
 
 // Loom config
 loom {
@@ -167,7 +176,7 @@ loom {
 	if (isActive) {
 		runConfigs.all {
 			ideConfigGenerated(true)
-			vmArgs("-Dmixin.debug.export=true")
+			vmArgs("-Dmixin.debug.export=true", "-Dsodium.checks.issue2561=false")
 			// Mom look I'm in the codebase!
 			programArgs("--username=${mod.clientuser}", "--uuid=${mod.clientuuid}")
 			runDir = "../../run/${stonecutter.current.project}/"
@@ -211,16 +220,22 @@ tasks {
 	}
 }
 
-tasks.withType<JavaCompile>() {
+tasks.compileJava {
+	options.encoding = "UTF-8"
 	options.compilerArgs.add("-Xplugin:Manifold")
 	// modify the JavaCompile task and inject our auto-generated Manifold symbols
-	if(!this.name.startsWith("_")) { // check the name, so we don't inject into Forge internal compilation
-		ManifoldMC.setupPreprocessor(options.compilerArgs, loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, false)
+	doFirst {
+		if(!this.name.startsWith("_")) { // check the name, so we don't inject into Forge internal compilation
+			ManifoldMC.setupPreprocessor(options.compilerArgs, loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, false)
+		}
 	}
 }
 
 project.tasks.register("setupManifoldPreprocessors") {
-	ManifoldMC.setupPreprocessor(ArrayList(), loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, true)
+	group = "build"
+	doLast {
+		ManifoldMC.setupPreprocessor(ArrayList(), loader, projectDir, mcVersion, stonecutter.active.project == stonecutter.current.project, true)
+	}
 }
 
 tasks.setupChiseledBuild { finalizedBy("setupManifoldPreprocessors") }
@@ -249,6 +264,19 @@ if (stonecutter.current.isActive) {
 	}
 }
 
+stonecutter {
+	val j21 = eval(mcVersion, ">=1.20.6")
+	java {
+		withSourcesJar()
+		sourceCompatibility = if (j21) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+		targetCompatibility = if (j21) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
+	}
+
+	kotlin {
+		jvmToolchain(if (j21) 21 else 17)
+	}
+}
+
 tasks.processResources {
 	val map = mapOf(
 		"version" to mod.version,
@@ -269,19 +297,6 @@ tasks.processResources {
 	filesMatching("fabric.mod.json") { expand(map) }
 	filesMatching("META-INF/mods.toml") { expand(map) }
 	filesMatching("META-INF/neoforge.mods.toml") { expand(map) }
-}
-
-stonecutter {
-	val j21 = eval(mcVersion, ">=1.20.6")
-	java {
-		withSourcesJar()
-		sourceCompatibility = if (j21) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
-		targetCompatibility = if (j21) JavaVersion.VERSION_21 else JavaVersion.VERSION_17
-	}
-
-	kotlin {
-		jvmToolchain(if (j21) 21 else 17)
-	}
 }
 
 // Publishing
