@@ -12,7 +12,7 @@
 		"issues": "https://github.com/${github}/${name}/issues"
 	},
 	"license": "${license}",
-	"icon": "assets/${namespace}/textures/mod_logo.png",
+	"icon": "assets/${id}/textures/mod_logo.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -32,6 +32,13 @@
 		"fabricloader": ">=0.15.0",
 		"minecraft": "${mc}",
 		"fabric-api": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "${discord}"
+			}
+		}
 	},
 	"accessWidener": "${id}.accesswidener"
 }

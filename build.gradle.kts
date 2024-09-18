@@ -257,6 +257,7 @@ tasks.processResources {
 		"author" to mod.author,
 		"namespace" to mod.namespace,
 		"description" to mod.description,
+		"discord" to mod.discord,
 		"name" to mod.name,
 		"license" to mod.license,
 		"github" to mod.github,
