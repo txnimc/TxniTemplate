@@ -86,6 +86,9 @@ dependencies {
 	// apply the Manifold processor, do not remove this unless you want to swap back to Stonecutter preprocessor
 	implementation(annotationProcessor("systems.manifold:manifold-preprocessor:${manifold.manifoldVersion.get()}")!!)
 
+	compileOnly("org.projectlombok:lombok:1.18.34")
+	annotationProcessor("org.projectlombok:lombok:1.18.34")
+
 	@Suppress("UnstableApiUsage")
 	mappings(loom.layered {
 		officialMojangMappings()
@@ -148,9 +151,9 @@ loom {
 	if (mod.isActive) {
 		runConfigs.all {
 			ideConfigGenerated(true)
-			//vmArgs("-Dmixin.debug.export=true", "-Dsodium.checks.issue2561=false")
+			vmArgs("-Dmixin.debug.export=true", "-Dsodium.checks.issue2561=false")
 			// Mom look I'm in the codebase!
-			//programArgs("--username=${mod.clientuser}", "--uuid=${mod.clientuuid}")
+			programArgs("--username=${mod.clientuser}", "--uuid=${mod.clientuuid}")
 			runDir = "../../run/${stonecutter.current.project}/"
 		}
 	}
