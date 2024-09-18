@@ -199,18 +199,14 @@ tasks.compileJava {
 	options.encoding = "UTF-8"
 	options.compilerArgs.add("-Xplugin:Manifold")
 	// modify the JavaCompile task and inject our auto-generated Manifold symbols
-	doFirst {
-		if(!this.name.startsWith("_")) { // check the name, so we don't inject into Forge internal compilation
-			ManifoldMC.setupPreprocessor(options.compilerArgs, mod.loader, projectDir, mod.mcVersion, stonecutter.active.project == stonecutter.current.project, false)
-		}
+	if(!this.name.startsWith("_")) { // check the name, so we don't inject into Forge internal compilation
+		ManifoldMC.setupPreprocessor(options.compilerArgs, mod.loader, projectDir, mod.mcVersion, stonecutter.active.project == stonecutter.current.project, false)
 	}
 }
 
 project.tasks.register("setupManifoldPreprocessors") {
 	group = "build"
-	doLast {
-		ManifoldMC.setupPreprocessor(ArrayList(), mod.loader, projectDir, mod.mcVersion, stonecutter.active.project == stonecutter.current.project, true)
-	}
+	ManifoldMC.setupPreprocessor(ArrayList(), mod.loader, projectDir, mod.mcVersion, stonecutter.active.project == stonecutter.current.project, true)
 }
 
 tasks.setupChiseledBuild { finalizedBy("setupManifoldPreprocessors") }
