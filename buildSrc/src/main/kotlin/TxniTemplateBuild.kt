@@ -5,6 +5,7 @@ import gradle.kotlin.dsl.accessors._523dc74e2e9552463686721a7434f18b.loom
 import gradle.kotlin.dsl.accessors._523dc74e2e9552463686721a7434f18b.minecraft
 import gradle.kotlin.dsl.accessors._523dc74e2e9552463686721a7434f18b.modApi
 import org.gradle.api.Project
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import txnitemplate.ModData
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
@@ -27,17 +28,22 @@ open class TxniTemplateBuild internal constructor(val project: Project)  {
             base { archivesName.set("${mod.id}-${mod.loader}") }
         }
 
-        project.dependencies.apply {
-            minecraft("com.mojang:minecraft:${mod.mcVersion}")
+        project.dependencies.apply(dependencies())
+    }
 
-            if (mod.isFabric) {
-                // JarJar Forge Config API
-                if (setting("options.forgeconfig"))
-                    include(when (mod.mcVersion) {
+    private fun dependencies(): (DependencyHandler).() -> Unit = {
+        minecraft("com.mojang:minecraft:${mod.mcVersion}")
+
+        if (mod.isFabric) {
+            // JarJar Forge Config API
+            if (setting("options.forgeconfig"))
+                include(
+                    when (mod.mcVersion) {
                         "1.19.2" -> modApi("net.minecraftforge:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
                         else -> modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${property("deps.forgeconfigapi")}")
-                    }!!)
-            }
+                    }!!
+                )
         }
     }
+
 }
