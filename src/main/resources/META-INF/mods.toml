@@ -7,7 +7,7 @@ issueTrackerURL = "https://github.com/${github}/${name}/issues"
 
 [[mods]]
 modId="${id}"
-version="${version}"
+version="${modversion}"
 displayName="${display_name}"
 authors="${author}"
 description="${description}"

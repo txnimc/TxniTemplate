@@ -195,6 +195,14 @@ tasks {
 	}
 }
 
+tasks.withType<Tar>() {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+tasks.withType<Zip>() {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 tasks.compileJava {
 	options.encoding = "UTF-8"
 	options.compilerArgs.add("-Xplugin:Manifold")
@@ -250,7 +258,7 @@ stonecutter {
 
 tasks.processResources {
 	val map = mapOf(
-		"version" to mod.version,
+		"modversion" to mod.version,
 		"mc" to mod.mcDep,
 		"id" to mod.id,
 		"group" to mod.group,
@@ -269,6 +277,9 @@ tasks.processResources {
 	filesMatching("fabric.mod.json") { expand(map) }
 	filesMatching("META-INF/mods.toml") { expand(map) }
 	filesMatching("META-INF/neoforge.mods.toml") { expand(map) }
+	
+	if (!mod.isFabric)
+		exclude("fabric.mod.json")
 }
 
 // Publishing
