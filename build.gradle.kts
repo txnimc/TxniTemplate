@@ -1,9 +1,9 @@
 import toni.blahaj.*
 import toni.blahaj.api.*
 
-val templateSettings = object : TxniTemplateSettings {
+val templateSettings = object : BlahajSettings {
 	// -------------------- Dependencies ---------------------- //
-	override val depsHandler: TxniDependencyHandler get() = object : TxniDependencyHandler {
+	override val depsHandler: BlahajDependencyHandler get() = object : BlahajDependencyHandler {
 		override fun addGlobal(mod : ModData, deps: DependencyHandler) {
 
 		}
@@ -21,10 +21,9 @@ val templateSettings = object : TxniTemplateSettings {
 		}
 	}
 
-
 	// ---------- Curseforge/Modrinth Configuration ----------- //
 	// For configuring the dependecies that will show up on your mod page.
-	override val publishHandler: TxniPublishDependencyHandler get() = object : TxniPublishDependencyHandler {
+	override val publishHandler: BlahajPublishDependencyHandler get() = object : BlahajPublishDependencyHandler {
 		override fun addShared(mod : ModData, deps: DependencyContainer) {
 			if (mod.isFabric) {
 				deps.requires("fabric-api")
@@ -44,7 +43,7 @@ val templateSettings = object : TxniTemplateSettings {
 plugins {
 	`maven-publish`
 	application
-	id("toni.blahaj") version "1.0.7"
+	id("toni.blahaj") version "1.0.8"
 	kotlin("jvm")
 	kotlin("plugin.serialization")
 	id("dev.kikugie.j52j") version "1.0"
