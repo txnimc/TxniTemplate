@@ -44,7 +44,7 @@ val templateSettings = object : TxniTemplateSettings {
 plugins {
 	`maven-publish`
 	application
-	id("toni.blahaj") version "1.0.4"
+	id("toni.blahaj") version "1.0.7"
 	kotlin("jvm")
 	kotlin("plugin.serialization")
 	id("dev.kikugie.j52j") version "1.0"
