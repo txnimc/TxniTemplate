@@ -9,39 +9,43 @@ import net.fabricmc.api.ModInitializer;
 *///?}
 
 //? if forge {
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+/*import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-//?}
+*///?}
 
 
 //? if neoforge {
-/*import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
-*///?}
+//?}
 
 
 //? if forge || neoforge {
 @Mod("example_mod")
 //?}
-public class ExampleMod #if FABRIC implements ModInitializer, ClientModInitializer #endif
+public class ExampleMod
+//? if fabric {
+/*implements ModInitializer, ClientModInitializer
+*///?}
 {
     public static final String MODNAME = "Example Mod";
     public static final String ID = "example_mod";
     public static final Logger LOGGER = LogManager.getLogger(MODNAME);
 
-    public ExampleMod(#if NEO IEventBus modEventBus, ModContainer modContainer #endif) {
+    public ExampleMod(
+        //? if neoforge {
+        IEventBus modEventBus, ModContainer modContainer        //?}
+        ) {
         //? if forge {
-        var context = FMLJavaModLoadingContext.get();
+        /*var context = FMLJavaModLoadingContext.get();
         var modEventBus = context.getModEventBus();
-        //?}
+        *///?}
 
         //? if forge || neoforge {
         modEventBus.addListener(this::commonSetup);
