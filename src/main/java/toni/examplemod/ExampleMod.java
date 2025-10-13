@@ -101,7 +101,7 @@ public class ExampleMod #if FABRIC implements ModInitializer, ClientModInitializ
         #endif
     }
 
-    // Forg event stubs to call the Fabric initialize methods, and set up cloth config screen
+    // Forge event stubs to call the Fabric initialize methods, and set up cloth config screen
     #if FORGELIKE
     public void commonSetup(FMLCommonSetupEvent event) { onInitialize(); }
     public void clientSetup(FMLClientSetupEvent event) { onInitializeClient(); }
